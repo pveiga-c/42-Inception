@@ -1,0 +1,20 @@
+comands for docker
+docker -> view all available subcommands
+docker info -> veiw system-wide information
+
+docker run "name image" -> try to find the "name image" locally, so it downloaded the image from Docke hub. and create a contanier from the image.
+docker search "name image" -> Search the images available on docker hub.
+docker pull "name image" -> pull the official image to your computer
+docker images -> to see the images that have been downloaded to your computer
+
+docker run -it ubuntu ->  run a container using the latest image of Ubuntu. The combinationof the -i and -t switches gives you interactive shell access into the container.
+
+docker ps -> see all containers actives (running)
+docker ps -a -> sel all containers in your computer (actives, inactives, stoped ...)
+docker ps -l -> see the lastest container crieted.
+docker start "ID container" -> start the container
+docker stop "ID or name container" -> stop the container
+
+
+
+
