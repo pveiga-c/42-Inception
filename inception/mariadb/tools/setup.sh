@@ -7,17 +7,20 @@
 
 # set -ex # print commands & exit on error (debug mode)
 
-# DB_NAME=thedatabase
-# DB_USER=theuser
-# DB_PASSWORD=abc
-# DB_PASS_ROOT=123
+DB_NAME=thedatabase
+DB_USER=theuser
+DB_PASSWORD=abc
+DB_PASS_ROOT=123
 
+# This script starts the MariaDB service.
+# It is intended to be used as part of the setup process for the MariaDB container
+# in the 42-Inception project at 42Lisboa.
 service mariadb start
 
 mariadb -v -u root << EOF
 CREATE DATABASE IF NOT EXISTS $DB_NAME;
 CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';
-GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';
+GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%'
 GRANT ALL PRIVILEGES ON $DB_NAME.* TO 'root'@'%' IDENTIFIED BY '$DB_PASS_ROOT';
 SET PASSWORD FOR 'root'@'localhost' = PASSWORD('$DB_PASS_ROOT');
 EOF
