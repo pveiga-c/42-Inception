@@ -16,6 +16,11 @@ COPY	tools/setup.sh /bin/
 
 RUN		chmod +x /bin/setup.sh
 
+
 # This Dockerfile command sets the default command to be executed when the container starts.
 # It runs the "setup.sh" script followed by the "mysqld_safe" command to start the MariaDB server safely.
-CMD	["setup.sh", "mysqld_safe"]
+# CMD	["setup.sh", "mysqld_safe"]
+
+ENTRYPOINT ["/bin/setup.sh"]
+
+CMD ["mysqld_safe", "--bind-address=0.0.0.0"]
