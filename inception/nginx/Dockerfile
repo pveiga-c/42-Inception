@@ -34,8 +34,8 @@ RUN openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes \
 RUN chmod 644 /etc/nginx/ssl/server.crt /etc/nginx/ssl/server.key
 
 # Copiar arquivos de configuração do Nginx
-COPY ./conf/nginx.conf /etc/nginx/nginx.conf
-COPY ./conf/server.conf /etc/nginx/conf.d/server.conf
+COPY ./tools/nginx.conf /etc/nginx/nginx.conf
+# COPY ./tools/server.conf /etc/nginx/conf.d/server.conf
 
 # Ajustar permissões para o diretório do Nginx
 RUN chown -R www-data:www-data /var/www/html
