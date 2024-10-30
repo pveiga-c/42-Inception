@@ -1,0 +1,73 @@
+version: "3.9"
+
+# Redes e Volumes
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/correia/data/mariadb
+      o: bind
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/correia/data/wordpress
+      o: bind
+
+services:
+
+  # Serviço MariaDB
+  mariadb:
+    container_name: mariadb
+    build: ./requirements/mariadb
+    image: mariadb:bullseye
+    env_file:
+      - .env
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: "mysql $MYSQL_DATABASE -uroot -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1;'"
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Serviço WordPress
+  wordpress:
+    container_name: wordpress
+    build: ./requirements/wordpress
+    image: wordpress:bullseye
+    env_file:
+      - .env
+    volumes:
+      - wordpress_data:/var/www/html
+    networks:
+      - app-network
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    ports:
+      - "9000:9000"
+    restart: on-failure
+
+  # Serviço Nginx
+  nginx:
+    container_name: nginx
+    build: ./requirements/nginx
+    image: nginx:bullseye
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress_data:/var/www/html:ro
+    networks:
+      - app-network
+    depends_on:
+      - wordpress
+    restart: on-failure
