@@ -1,57 +1,64 @@
-include srcs/.env
+all: up
 
-.SILENT:
+up: build
+	@echo "**********Docker up**********\n" 
+	@sudo mkdir -p /home/pveiga-c/data/wordpress
+	@sudo mkdir -p /home/pveiga-c/data/mariadb
+	@docker-compose -f ./srcs/docker-compose.yml up -d
 
-all:
-	clear
-	sudo mkdir -p $(VOLUMES_DATA)/data/mariadb $(VOLUMES_DATA)/data/wordpress;
-	$(COMPOSE) up -d
-
-start:
-	clear
-	$(COMPOSE) up -d
+down:
+	@echo "**********Docker down**********\n" 
+	@docker-compose -f ./srcs/docker-compose.yml down
 
 stop:
+	@echo "**********Docker stop**********\n" 
+	@docker-compose -f ./srcs/docker-compose.yml stop
+
+start:
+	@echo "**********Docker start**********\n" 
+	@docker-compose -f ./srcs/docker-compose.yml start
+
+build:
+	@echo "**********Docker build**********\n" 
+	@docker-compose -f ./srcs/docker-compose.yml build
+
+logs:
 	clear
-	$(COMPOSE) stop
+	@echo "**********Docker logs**********\n" 
+	@docker-compose -f ./srcs/docker-compose.yml logs
+
+ps:
+#	clear
+	@echo "**********Docker containers**********\n" 
+	@docker ps -a
+
+images:
+#	clear
+	@echo "\n**********Docker images**********\n"
+	@docker images
+
+volumes:
+#	clear
+	@echo "\n**********Docker volumes**********\n"
+	@docker volume ls
+
+
+networks: 
+#	clear
+	@echo "\n**********Docker networks**********\n" 
+	@docker network ls
+
+list: ps images volumes networks
+	@echo "**********Docker list**********\n\n"
+
 
 clean:
 	clear
-	$(COMPOSE) down --rmi all --volumes
+	@docker-compose -f ./srcs/docker-compose.yml down --rmi all --volumes
 
 fclean: clean
-	sudo rm -irf $(VOLUMES_DATA)/data
+	@sudo rm -irf /home/pveiga-c/data
 
-re: fclean all
 
-# Display containers logs
-logs:
-	clear
-	$(COMPOSE) logs
+re: fclean up
 
-# Display containers details
-info:
-	clear
-	echo "*****    $(COMPOSE) ps -a   *****"
-	$(COMPOSE) ps -a
-	echo "\n*****   $(DOCKER) images   *****"
-	$(DOCKER) images
-	echo "\n*****   $(DOCKER) network ls   *****"
-	$(DOCKER) network ls
-	echo "\n*****   $(DOCKER) volume ls   *****"
-	$(DOCKER) volume ls
-
-# Interactive mode
-mariadb-it:
-	clear
-	$(DOCKER) exec -it $(MARIADB) /bin/bash
-
-nginx-it:
-	clear
-	$(DOCKER) exec -it $(NGINX) /bin/bash
-
-wordpress-it:
-	clear
-	$(DOCKER) exec -it $(WORDPRESS) /bin/bash
-
-.PHONY: all start stop clean fclean logs info mariadb-it nginx-it wordpress-it

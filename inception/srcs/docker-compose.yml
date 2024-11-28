@@ -1,73 +1,69 @@
-version: "3.9"
-
-# Redes e Volumes
 networks:
-  app-network:
-    driver: bridge
+  inception:
+    name: inception
 
-volumes:
-  mariadb_data:
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/correia/data/mariadb
-      o: bind
-  wordpress_data:
-    driver: local
-    driver_opts:
-      type: none
-      device: /home/correia/data/wordpress
-      o: bind
 
 services:
-
-  # Serviço MariaDB
   mariadb:
+    image: mariadb
     container_name: mariadb
     build: ./requirements/mariadb
-    image: mariadb:bullseye
-    env_file:
-      - .env
     volumes:
-      - mariadb_data:/var/lib/mysql
-    networks:
-      - app-network
-    restart: unless-stopped
+      - mariadb:/var/lib/mysql
+    env_file :
+      - .env
+    networks :
+      - inception
+    restart: always
     healthcheck:
-      test: "mysql $MYSQL_DATABASE -uroot -p$MYSQL_ROOT_PASSWORD -e 'SELECT 1;'"
-      interval: 10s
-      timeout: 3s
-      retries: 3
+      test: ["CMD", "nc", "-zv", "mariadb", "3306"]
+      interval: 1s
+      timeout: 5s
+      retries: 10
 
-  # Serviço WordPress
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    build: ./requirements/nginx
+    ports:
+      - "443:443"
+    depends_on:
+      - wordpress
+    volumes:
+      - wordpress:/var/www/wordpress
+    networks:
+      - inception
+    restart: always
+
+
   wordpress:
+    image: wordpress
     container_name: wordpress
     build: ./requirements/wordpress
-    image: wordpress:bullseye
-    env_file:
-      - .env
-    volumes:
-      - wordpress_data:/var/www/html
-    networks:
-      - app-network
     depends_on:
       mariadb:
         condition: service_healthy
-    ports:
-      - "9000:9000"
-    restart: on-failure
-
-  # Serviço Nginx
-  nginx:
-    container_name: nginx
-    build: ./requirements/nginx
-    image: nginx:bullseye
-    ports:
-      - "443:443"
     volumes:
-      - wordpress_data:/var/www/html:ro
+      - wordpress:/var/www/wordpress
+    env_file:
+      - .env
     networks:
-      - app-network
-    depends_on:
-      - wordpress
-    restart: on-failure
+      - inception
+    restart: always
+
+volumes:
+  mariadb:
+    name: mariadb
+    driver: local
+    driver_opts:
+      device: /home/pveiga-c/data/mariadb
+      o: bind
+      type: none
+  wordpress:
+    name: wordpress
+    driver: local
+    driver_opts:
+      device: /home/pveiga-c/data/wordpress
+      o: bind
+      type: none

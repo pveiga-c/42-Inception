@@ -1,42 +1,31 @@
-# Usar imagem Debian Bullseye como base
+#Nginx Dockerfile
+
 FROM debian:bullseye
-# Definir a variável para evitar prompts durante a instalação
-ENV DEBIAN_FRONTEND=noninteractive
 
-# Expor a porta 443 (SSL)
-EXPOSE 443
+RUN apt-get update && apt-get upgrade -y
 
-# Instalar Nginx e OpenSSL, e limpar a cache do apt
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    nginx \
-    openssl && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y nginx openssl
 
-# Criar diretório para certificados SSL
 RUN mkdir -p /etc/nginx/ssl
-# Gerar um certificado SSL autoassinado
-ARG COUNTRY=PT
-ARG STATE=Lisboa
-ARG LOCALITY=Lisboa
-ARG ORGANIZATION=MyCompany
-ARG UNIT=IT
-ARG COMMON_NAME=localhost
 
-RUN openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes \
-    -out /etc/nginx/ssl/pveiga-c.crt \
-    -keyout /etc/nginx/ssl/pveiga-c.key \
+ARG		COUNTRY=PT
+ARG		STATE=Lisbon
+ARG		LOCALITY=lisbon
+ARG		ORGANIZATION=42Lisboa
+ARG		UNIT=pveiga-c
+ARG		COMMON_NAME=pveiga-c
+
+RUN mkdir -p /etc/nginx/ssl
+
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+	-keyout /etc/nginx/ssl/pveiga-c.key \
+	-out /etc/nginx/ssl/pveiga-c.crt \
     -subj "/C=${COUNTRY}/ST=${STATE}/L=${LOCALITY}/O=${ORGANIZATION}/OU=${UNIT}/CN=${COMMON_NAME}"
 
-    
-# copy configuration file
-COPY ./tools/nginx.conf /etc/nginx/conf.d
+COPY ./tools/nginx.conf /etc/nginx/nginx.conf
 
-RUN mkdir -p /run/nginx
+RUN mkdir -p /var/www/wordpress
 
+RUN chown -R www-data:www-data /var/www/wordpress
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
-
-# Reset DEBIAN_FRONTEND variable to avoid affecting other processes
-ENV DEBIAN_FRONTEND=
